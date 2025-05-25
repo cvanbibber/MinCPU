@@ -1,14 +1,14 @@
 # MinCPU - Complete High-Performance RISC-V Processor Implementation
 
-A comprehensive, high-performance RISC-V RV32IMC processor implementation with complete C compilation toolchain, dual loading methods, industry-standard benchmarks, and professional development workflow.
+A comprehensive, high-performance RISC-V RV32IMC processor implementation with complete C compilation toolchain, dual loading methods, industry-standard benchmarks, and professional development workflow. Optimized for maximal performance per area, the MinCPU RISC-V Processor aims to exceed the performance of many other RISC-based CPUs, primarily the ARM Cortex M0+, PicoRV32, and TinyRISCV.
 
 ## 🏆 Project Overview
 
-MinCPU is a complete RISC-V processor system featuring:
+MinCPU is a complete RISC-V processor system based on the RV32IMC ISA:
 - **RV32IMC ISA**: Base integer (I), multiply/divide (M), and compressed (C) instruction sets
-- **High-frequency design**: Targeting 100+ MHz on Xilinx xc7z020-1clg400c
-- **Exceptional performance**: 333.3 MIPS peak performance with 0.30 CPI
-- **Cost-optimized**: 974,679 cost units with 337.64 Figure of Merit
+- **High-frequency design**: Targeting 85 MHz on Xilinx xc7z020-1clg400c
+- **Exceptional performance**: 283 MIPS peak performance with 0.32 CPI
+- **Cost-optimized**: 974,679 cost units with 200+ Figure of Merit (Based on UC Berkeley EE151 benchmarks)
 - **Complete C toolchain**: Cross-compilation with industry-standard benchmarks
 - **Dual loading methods**: Static (embedded) and dynamic (UART bootloader)
 - **Modular design**: Single configuration file for easy customization
@@ -19,7 +19,7 @@ MinCPU is a complete RISC-V processor system featuring:
 
 ```
 MinCPU/
-├── Hardware/           # Verilog RTL implementation (15 files)
+├── Hardware/           # Verilog RTL implementation
 │   ├── risc_v_cpu_optimized.v      # Main CPU core (RV32IMC)
 │   ├── alu_optimized.v             # Optimized ALU with carry chains  
 │   ├── multiplier_unit.v           # RV32M multiply/divide unit
@@ -29,7 +29,7 @@ MinCPU/
 │   ├── performance_analyzer.v      # Comprehensive benchmarking
 │   ├── cpu_config.vh               # Central configuration file
 │   └── ...                         # Supporting modules
-├── Software/           # Compilation and simulation tools (22+ files)
+├── Software/           # Compilation and simulation tools
 │   ├── hello.c                     # Example C program
 │   ├── dhrystone.c                 # Dhrystone industry benchmark
 │   ├── whetstone.c                 # Whetstone industry benchmark
@@ -41,12 +41,7 @@ MinCPU/
 │   ├── Makefile                    # Hardware simulation & analysis
 │   ├── Makefile.c                  # C compilation & benchmarks
 │   └── ...                         # Generated files and tools
-├── Docs/              # Comprehensive documentation (6+ files)
-│   ├── final_status_report.md      # Complete project summary
-│   ├── PERFORMANCE_ANALYSIS.md     # Detailed benchmarks
-│   ├── README_C_COMPILATION.md     # C toolchain guide
-│   └── ...                         # Technical documentation
-└── README.md          # This comprehensive guide
+└── README.md
 ```
 
 ## 🚀 Quick Start Guide

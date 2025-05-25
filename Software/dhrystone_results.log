@@ -1,8 +1,8 @@
 Running benchmark 7
 VCD info: dumpfile performance_testbench.vcd opened for output.
 === MinCPU Performance Analysis ===
-Target Frequency: 40 MHz
-Clock Period: 25.0 ns
+Target Frequency: 100 MHz
+Clock Period: 10.0 ns
 === MinCPU Benchmark 7 ===
 Benchmark 7: Dhrystone simulation
 Testing Dhrystone simulation (1000 iterations)...
@@ -10,17 +10,17 @@ Dhrystone Performance: 1000 iterations in 1000 cycles
 
 Performance Results:
 ===================
-Total Cycles: 1008
+Total Cycles: 1020
 Total Tests: 1000
 Tests Passed: 1000
 Success Rate: 100.0%
-CPI: 1.01
-MIPS (at 40.0 MHz): 39.7
-Dhrystones per second: 39682540
-Dhrystones per second per MHz: 992063
+CPI: 1.02
+MIPS (at 100.0 MHz): 98.0
+Dhrystones per second: 98039216
+Dhrystones per second per MHz: 980392
 
 Benchmark 7 Summary:
 - Dhrystone: Integer performance benchmark
 
 ✓ Benchmark 7 complete
-../Hardware/performance_testbench.v:149: $finish called at 25239500 (1ps)
+../Hardware/performance_testbench.v:149: $finish called at 10247000 (1ps)
