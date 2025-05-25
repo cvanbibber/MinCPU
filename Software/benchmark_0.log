@@ -1,0 +1,24 @@
+Running benchmark 0
+VCD info: dumpfile performance_testbench.vcd opened for output.
+=== MinCPU Performance Analysis ===
+Target Frequency: 40 MHz
+Clock Period: 25.0 ns
+=== MinCPU Benchmark 0 ===
+Benchmark 0: Basic ALU operations
+Testing ALU performance...
+ALU Performance: 100 operations in 99 cycles
+
+Performance Results:
+===================
+Total Cycles: 107
+Total Tests: 100
+Tests Passed: 100
+Success Rate: 100.0%
+CPI: 1.07
+MIPS (at 40.0 MHz): 37.4
+
+Benchmark 0 Summary:
+- Basic ALU operations: Single-cycle execution
+
+✓ Benchmark 0 complete
+../Hardware/performance_testbench.v:141: $finish called at 2737500 (1ps)

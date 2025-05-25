@@ -1,0 +1,30 @@
+#-----------------------------------------------------------
+# Vivado v2024.2 (64-bit)
+# SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+# IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+# SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+# Start of session at: Sun May 25 08:41:29 2025
+# Process ID         : 28368
+# Current directory  : C:/Users/cvanbibber/Documents/fpgasoftcpu/MinCPU/Software
+# Command line       : vivado.exe -mode batch -source vivado_synth.tcl -log synthesis.log
+# Log file           : C:/Users/cvanbibber/Documents/fpgasoftcpu/MinCPU/Software/synthesis.log
+# Journal file       : C:/Users/cvanbibber/Documents/fpgasoftcpu/MinCPU/Software\vivado.jou
+# Running On         : DESKTOP-JEOMHDP
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19044
+# Processor Detail   : Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz
+# CPU Frequency      : 2592 MHz
+# CPU Physical cores : 6
+# CPU Logical cores  : 12
+# Host memory        : 16951 MB
+# Swap memory        : 19172 MB
+# Total Virtual      : 36124 MB
+# Available Virtual  : 4796 MB
+#-----------------------------------------------------------
+source vivado_synth.tcl
+# {# Auto-generated synthesis script}
+invalid command name "# Auto-generated synthesis script"
+    while executing
+""# Auto-generated synthesis script" "
+    (file "vivado_synth.tcl" line 1)
+INFO: [Common 17-206] Exiting Vivado at Sun May 25 08:41:40 2025...

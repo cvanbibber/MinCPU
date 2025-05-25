@@ -1,0 +1,24 @@
+Running benchmark 4
+VCD info: dumpfile performance_testbench.vcd opened for output.
+=== MinCPU Performance Analysis ===
+Target Frequency: 40 MHz
+Clock Period: 25.0 ns
+=== MinCPU Benchmark 4 ===
+Benchmark 4: Fibonacci calculation
+Testing Fibonacci calculation...
+Fibonacci Performance: 10 iterations in 9 cycles
+
+Performance Results:
+===================
+Total Cycles: 17
+Total Tests: 10
+Tests Passed: 10
+Success Rate: 100.0%
+CPI: 1.70
+MIPS (at 40.0 MHz): 23.5
+
+Benchmark 4 Summary:
+- Fibonacci: Recursive computation pattern
+
+✓ Benchmark 4 complete
+../Hardware/performance_testbench.v:141: $finish called at 487500 (1ps)

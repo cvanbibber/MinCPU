@@ -1,0 +1,26 @@
+Running benchmark 8
+VCD info: dumpfile performance_testbench.vcd opened for output.
+=== MinCPU Performance Analysis ===
+Target Frequency: 40 MHz
+Clock Period: 25.0 ns
+=== MinCPU Benchmark 8 ===
+Benchmark 8: Whetstone simulation
+Testing Whetstone simulation (100 iterations)...
+Whetstone Performance: 100 iterations in 399 cycles
+
+Performance Results:
+===================
+Total Cycles: 407
+Total Tests: 400
+Tests Passed: 400
+Success Rate: 100.0%
+CPI: 1.02
+MIPS (at 40.0 MHz): 39.3
+Whetstones per second: 9828010
+Whetstones per second per MHz: 245700
+
+Benchmark 8 Summary:
+- Whetstone: Mathematical performance benchmark
+
+✓ Benchmark 8 complete
+../Hardware/performance_testbench.v:149: $finish called at 10237500 (1ps)

@@ -1,0 +1,230 @@
+# Windows-Specific Makefile for MinCPU Vivado Synthesis
+# Handles Vivado installation at C:\Xilinx\Vivado\2024.2
+
+# Vivado Configuration for Windows
+VIVADO_ROOT = C:/Xilinx/Vivado/2024.2
+VIVADO_BIN = $(VIVADO_ROOT)/bin
+VIVADO_CMD = "$(VIVADO_BIN)/vivado.bat"
+
+# Alternative paths to try
+VIVADO_PATHS = \
+	"C:/Xilinx/Vivado/2024.2/bin/vivado.bat" \
+	"C:/Xilinx/Vivado/2024.1/bin/vivado.bat" \
+	"C:/Xilinx/Vivado/2023.2/bin/vivado.bat" \
+	"C:/Xilinx/Vivado/2023.1/bin/vivado.bat"
+
+# Design Configuration
+HARDWARE_DIR = ../Hardware
+TOP_MODULE = performance_analyzer
+TARGET_FREQ = 40
+FPGA_PART = xc7z020clg400-1
+
+# File Lists
+CORE_SOURCES = \
+	$(HARDWARE_DIR)/risc_v_cpu_optimized.v \
+	$(HARDWARE_DIR)/control_unit.v \
+	$(HARDWARE_DIR)/register_file.v \
+	$(HARDWARE_DIR)/alu_optimized.v \
+	$(HARDWARE_DIR)/immediate_gen_optimized.v \
+	$(HARDWARE_DIR)/branch_unit_optimized.v \
+	$(HARDWARE_DIR)/multiplier_unit.v \
+	$(HARDWARE_DIR)/compressed_decoder.v \
+	$(HARDWARE_DIR)/uart_bootloader.v \
+	$(HARDWARE_DIR)/instruction_memory.v \
+	$(HARDWARE_DIR)/data_memory.v \
+	$(HARDWARE_DIR)/performance_analyzer.v \
+	$(HARDWARE_DIR)/testbench.v \
+	$(HARDWARE_DIR)/optimization_test_fixed.v \
+	$(HARDWARE_DIR)/cpu_config.vh
+
+# Output Files
+SYNTH_SCRIPT = vivado_synth_win.tcl
+CONSTRAINT_FILE = timing_constraints_win.xdc
+PROJECT_DIR = build_vivado
+TIMING_REPORT = timing_report_win.rpt
+AREA_REPORT = area_report_win.rpt
+
+# Default target
+.PHONY: all
+all: check_vivado optimize_synthesis_win
+
+# Check Vivado Installation
+.PHONY: check_vivado
+check_vivado:
+	@echo "Checking Vivado installation..."
+	@echo "Looking for Vivado at: $(VIVADO_ROOT)"
+	@if [ -f "$(VIVADO_BIN)/vivado.bat" ]; then \
+		echo "✓ Found Vivado at $(VIVADO_BIN)/vivado.bat"; \
+		echo "Testing Vivado version..."; \
+		$(VIVADO_CMD) -version || echo "Warning: Vivado version check failed"; \
+	else \
+		echo "✗ Vivado not found at $(VIVADO_BIN)/vivado.bat"; \
+		echo "Trying alternative paths..."; \
+		found=0; \
+		for path in $(VIVADO_PATHS); do \
+			if [ -f $$path ]; then \
+				echo "✓ Found Vivado at $$path"; \
+				found=1; \
+				break; \
+			fi; \
+		done; \
+		if [ $$found -eq 0 ]; then \
+			echo "✗ Vivado not found in any expected location"; \
+			echo "Please run setup_vivado.bat first"; \
+			exit 1; \
+		fi; \
+	fi
+
+# Windows-Optimized Synthesis Flow
+.PHONY: optimize_synthesis_win
+optimize_synthesis_win: check_vivado $(SYNTH_SCRIPT) $(CONSTRAINT_FILE)
+	@echo "Running Windows-optimized synthesis flow..."
+	@echo "Target: $(TARGET_FREQ) MHz on $(FPGA_PART)"
+	@echo "Project directory: $(PROJECT_DIR)"
+	@if [ -f "$(VIVADO_BIN)/vivado.bat" ]; then \
+		echo "Starting Vivado synthesis..."; \
+		$(VIVADO_CMD) -mode batch -source $(SYNTH_SCRIPT) -log synthesis_win.log; \
+		echo "Synthesis complete. Check synthesis_win.log for details."; \
+		if [ -f $(TIMING_REPORT) ]; then \
+			echo "Timing report generated: $(TIMING_REPORT)"; \
+		fi; \
+		if [ -f $(AREA_REPORT) ]; then \
+			echo "Area report generated: $(AREA_REPORT)"; \
+		fi; \
+	else \
+		echo "ERROR: Vivado not found. Please run setup_vivado.bat first."; \
+		exit 1; \
+	fi
+
+# Generate Windows-Compatible Synthesis Script
+$(SYNTH_SCRIPT): 
+	@echo "Creating Windows-compatible Vivado synthesis script..."
+	@echo "# Auto-generated Windows synthesis script" > $@
+	@echo "# Generated for MinCPU on Windows with Vivado $(shell basename $(VIVADO_ROOT))" >> $@
+	@echo "" >> $@
+	@echo "# Create project" >> $@
+	@echo "create_project mincpu_win $(PROJECT_DIR) -part $(FPGA_PART) -force" >> $@
+	@echo "" >> $@
+	@echo "# Add source files (using forward slashes for Vivado)" >> $@
+	@for file in $(CORE_SOURCES); do \
+		echo "add_files {$$file}" >> $@; \
+	done
+	@echo "" >> $@
+	@echo "# Set top module" >> $@
+	@echo "set_property top $(TOP_MODULE) [current_fileset]" >> $@
+	@echo "" >> $@
+	@echo "# Add constraints" >> $@
+	@echo "add_files -fileset constrs_1 $(CONSTRAINT_FILE)" >> $@
+	@echo "" >> $@
+	@echo "# Synthesis with area optimization" >> $@
+	@echo "synth_design -top $(TOP_MODULE) -part $(FPGA_PART) -directive AreaOptimized_high" >> $@
+	@echo "" >> $@
+	@echo "# Optimization passes" >> $@
+	@echo "opt_design -directive ExploreArea" >> $@
+	@echo "place_design -directive ExtraPostPlacementOpt" >> $@
+	@echo "route_design -directive Explore" >> $@
+	@echo "" >> $@
+	@echo "# Generate reports" >> $@
+	@echo "report_utilization -file $(AREA_REPORT)" >> $@
+	@echo "report_timing_summary -file $(TIMING_REPORT)" >> $@
+	@echo "report_power -file power_report_win.rpt" >> $@
+	@echo "" >> $@
+	@echo "# Save checkpoint" >> $@
+	@echo "write_checkpoint -force $(PROJECT_DIR)/mincpu_implemented.dcp" >> $@
+	@echo "" >> $@
+	@echo "# Generate bitstream (optional)" >> $@
+	@echo "# write_bitstream -force $(PROJECT_DIR)/mincpu.bit" >> $@
+	@echo "" >> $@
+	@echo "puts \"Synthesis and implementation complete!\"" >> $@
+	@echo "exit" >> $@
+
+# Generate Windows-Compatible Constraints
+$(CONSTRAINT_FILE):
+	@echo "Creating Windows-compatible timing constraints..."
+	@echo "# MinCPU Timing Constraints for Windows Synthesis" > $@
+	@echo "# Generated for $(TARGET_FREQ) MHz target frequency" >> $@
+	@echo "" >> $@
+	@echo "# Main system clock" >> $@
+	@echo "create_clock -period [expr 1000.0/$(TARGET_FREQ)] -name sys_clk [get_ports clk]" >> $@
+	@echo "" >> $@
+	@echo "# Input/Output delays" >> $@
+	@echo "set_input_delay -clock sys_clk 2.0 [all_inputs]" >> $@
+	@echo "set_output_delay -clock sys_clk 2.0 [all_outputs]" >> $@
+	@echo "" >> $@
+	@echo "# Clock uncertainty" >> $@
+	@echo "set_clock_uncertainty 0.5 [get_clocks sys_clk]" >> $@
+	@echo "" >> $@
+	@echo "# False paths for reset" >> $@
+	@echo "set_false_path -from [get_ports rst_n]" >> $@
+
+# Quick Synthesis (No P&R)
+.PHONY: synth_only
+synth_only: check_vivado
+	@echo "Running synthesis only (no place and route)..."
+	@echo "# Quick synthesis script" > quick_synth.tcl
+	@echo "create_project -in_memory -part $(FPGA_PART)" >> quick_synth.tcl
+	@for file in $(CORE_SOURCES); do \
+		echo "read_verilog {$$file}" >> quick_synth.tcl; \
+	done
+	@echo "synth_design -top $(TOP_MODULE) -part $(FPGA_PART)" >> quick_synth.tcl
+	@echo "report_utilization" >> quick_synth.tcl
+	@echo "exit" >> quick_synth.tcl
+	$(VIVADO_CMD) -mode batch -source quick_synth.tcl -log quick_synth.log
+
+# Analyze Results
+.PHONY: analyze_results
+analyze_results:
+	@echo "Analyzing synthesis results..."
+	@if [ -f $(TIMING_REPORT) ]; then \
+		echo "=== TIMING ANALYSIS ==="; \
+		grep -A 5 -B 5 "Worst Negative Slack" $(TIMING_REPORT) || echo "No timing violations found"; \
+		grep -A 3 "Design Timing Summary" $(TIMING_REPORT) || echo "No timing summary found"; \
+	else \
+		echo "Timing report not found: $(TIMING_REPORT)"; \
+	fi
+	@echo ""
+	@if [ -f $(AREA_REPORT) ]; then \
+		echo "=== AREA ANALYSIS ==="; \
+		grep -A 10 "Slice LUTs" $(AREA_REPORT) || echo "No LUT utilization found"; \
+		grep -A 10 "Slice Registers" $(AREA_REPORT) || echo "No register utilization found"; \
+	else \
+		echo "Area report not found: $(AREA_REPORT)"; \
+	fi
+
+# Clean Windows Build Files
+.PHONY: clean
+clean:
+	@echo "Cleaning Windows build files..."
+	@rm -rf $(PROJECT_DIR)/ *.log *.jou *.str
+	@rm -f $(SYNTH_SCRIPT) $(CONSTRAINT_FILE)
+	@rm -f *_report_win.rpt quick_synth.tcl
+	@rm -rf .Xil/ vivado_*.backup.jou vivado_*.backup.log
+	@echo "Clean complete."
+
+# Help
+.PHONY: help
+help:
+	@echo "MinCPU Windows Vivado Makefile"
+	@echo "=============================="
+	@echo ""
+	@echo "Prerequisites:"
+	@echo "  1. Run setup_vivado.bat to configure environment"
+	@echo "  2. Ensure Vivado is installed at C:\\Xilinx\\Vivado\\2024.2"
+	@echo ""
+	@echo "Main Targets:"
+	@echo "  all                  - Check Vivado and run full synthesis"
+	@echo "  check_vivado         - Verify Vivado installation"
+	@echo "  optimize_synthesis_win - Run optimized synthesis flow"
+	@echo "  synth_only           - Run synthesis only (no P&R)"
+	@echo "  analyze_results      - Analyze timing and area reports"
+	@echo "  clean                - Remove build files"
+	@echo ""
+	@echo "Configuration:"
+	@echo "  TARGET_FREQ=$(TARGET_FREQ)        - Target frequency in MHz"
+	@echo "  FPGA_PART=$(FPGA_PART)  - Target FPGA part"
+	@echo "  VIVADO_ROOT=$(VIVADO_ROOT) - Vivado installation path"
+	@echo ""
+	@echo "Example Usage:"
+	@echo "  make -f Makefile.vivado check_vivado"
+	@echo "  make -f Makefile.vivado optimize_synthesis_win"
+	@echo "  make -f Makefile.vivado analyze_results" 

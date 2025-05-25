@@ -1,0 +1,24 @@
+Running benchmark 5
+VCD info: dumpfile performance_testbench.vcd opened for output.
+=== MinCPU Performance Analysis ===
+Target Frequency: 40 MHz
+Clock Period: 25.0 ns
+=== MinCPU Benchmark 5 ===
+Benchmark 5: Sorting algorithm
+Testing sorting algorithm...
+Sorting Performance: 8-element sort in 27 cycles
+
+Performance Results:
+===================
+Total Cycles: 35
+Total Tests: 28
+Tests Passed: 28
+Success Rate: 100.0%
+CPI: 1.25
+MIPS (at 40.0 MHz): 32.0
+
+Benchmark 5 Summary:
+- Sorting: Memory access and comparison heavy
+
+✓ Benchmark 5 complete
+../Hardware/performance_testbench.v:141: $finish called at 937500 (1ps)
