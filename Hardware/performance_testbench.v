@@ -21,7 +21,7 @@ module performance_testbench;
     // Clock generation
     initial begin
         clk = 0;
-        forever #12.5 clk = ~clk; // 40MHz clock
+        forever #5 clk = ~clk; // 100MHz clock
     end
     
     // Reset sequence
@@ -33,8 +33,8 @@ module performance_testbench;
         
         #50 rst_n = 1;
         $display("=== MinCPU Performance Analysis ===");
-        $display("Target Frequency: 40 MHz");
-        $display("Clock Period: 25.0 ns");
+        $display("Target Frequency: 100 MHz");
+        $display("Clock Period: 10.0 ns");
     end
     
     // Cycle counter
@@ -403,7 +403,7 @@ module performance_testbench;
         real mips_estimate;
         real benchmark_score;
         begin
-            frequency_mhz = 40.0; // Target frequency
+            frequency_mhz = 100.0; // Target frequency
             
             $display("");
             $display("Performance Results:");

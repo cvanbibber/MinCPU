@@ -1,28 +1,28 @@
 Running benchmark 3
 VCD info: dumpfile performance_testbench.vcd opened for output.
 === MinCPU Performance Analysis ===
-Target Frequency: 40 MHz
-Clock Period: 25.0 ns
+Target Frequency: 100 MHz
+Clock Period: 10.0 ns
 === MinCPU Benchmark 3 ===
 Benchmark 3: Mixed workload
 Testing ALU performance...
 ALU Performance: 100 operations in 99 cycles
 Testing Immediate Generator performance...
-Immediate Gen Performance: 100 operations in 4 cycles
+Immediate Gen Performance: 100 operations in 10 cycles
 Testing Branch Unit performance...
-Branch Performance: 100 operations in 4 cycles
+Branch Performance: 100 operations in 10 cycles
 
 Performance Results:
 ===================
-Total Cycles: 115
+Total Cycles: 139
 Total Tests: 300
 Tests Passed: 300
 Success Rate: 100.0%
-CPI: 0.38
-MIPS (at 40.0 MHz): 104.3
+CPI: 0.46
+MIPS (at 100.0 MHz): 215.8
 
 Benchmark 3 Summary:
 - Mixed workload: Balanced instruction mix
 
 ✓ Benchmark 3 complete
-../Hardware/performance_testbench.v:141: $finish called at 2937500 (1ps)
+../Hardware/performance_testbench.v:149: $finish called at 1445000 (1ps)

@@ -1,8 +1,8 @@
 Running benchmark 1
 VCD info: dumpfile performance_testbench.vcd opened for output.
 === MinCPU Performance Analysis ===
-Target Frequency: 40 MHz
-Clock Period: 25.0 ns
+Target Frequency: 100 MHz
+Clock Period: 10.0 ns
 === MinCPU Benchmark 1 ===
 Benchmark 1: Memory-intensive operations
 Testing memory-intensive operations...
@@ -10,15 +10,15 @@ Memory Performance: 50 operations in 99 cycles
 
 Performance Results:
 ===================
-Total Cycles: 107
+Total Cycles: 119
 Total Tests: 50
 Tests Passed: 50
 Success Rate: 100.0%
-CPI: 2.14
-MIPS (at 40.0 MHz): 18.7
+CPI: 2.38
+MIPS (at 100.0 MHz): 42.0
 
 Benchmark 1 Summary:
 - Memory-intensive: Simulated memory latency
 
 ✓ Benchmark 1 complete
-../Hardware/performance_testbench.v:141: $finish called at 2737500 (1ps)
+../Hardware/performance_testbench.v:149: $finish called at 1245000 (1ps)

@@ -1,0 +1,60 @@
+================================================================================
+MinCPU COMPREHENSIVE ANALYSIS REPORT
+================================================================================
+
+TIMING ANALYSIS:
+----------------------------------------
+Maximum Frequency: 85.0 MHz
+Critical Path: 11.8 ns
+Target Period: 10.0 ns
+Worst Negative Slack: -1.76 ns
+Timing Method: vivado_report
+Timing Status: [FAIL] Timing violation (1.76 ns)
+
+PERFORMANCE ANALYSIS:
+----------------------------------------
+Best CPI: 0.30
+Average MIPS: 98.4
+Peak Performance: 283.4 MIPS
+
+RESOURCE UTILIZATION:
+----------------------------------------
+LUT         :    850
+LUTRAM      :     64
+FF          :    420
+CARRY4      :     25
+BRAM        :      2
+DSP         :      2
+
+COST ANALYSIS:
+----------------------------------------
+Element Breakdown:
+  LUT6        :  340 × 1713 =   582420
+  LUT4        :  212 ×  429 =    90948
+  LUT5        :  170 ×  857 =   145690
+  LUT3        :   85 ×  429 =    36465
+  LUT2        :   42 ×  429 =    18018
+  RAMD32      :   64 ×  857 =    54848
+  FDRE        :  420 ×  107 =    44940
+  CARRY4      :   25 ×   54 =     1350
+  RAMB36E1    :    2 ×    0 =        0
+                               Total Cost:   974679
+
+FIGURE OF MERIT:
+----------------------------------------
+FoM = (1000 × fmax^1.0) / (cpi^1.0) / (cost^0.5)
+FoM = (1000 × 85.0) / 0.30 / 974679^0.5
+FoM = 287.10
+
+EFFICIENCY METRICS:
+----------------------------------------
+MIPS per Cost^0.5: 0.10
+MHz per Cost^0.5: 0.09
+Performance Density: 287.10 FoM
+
+PERFORMANCE CONTEXT:
+----------------------------------------
+[GOOD] Medium-performance design (50-100 MHz)
+[EXCELLENT] Excellent CPI (<=1.1)
+[MODERATE] Moderate Figure of Merit (<500)
+================================================================================

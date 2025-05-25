@@ -5,7 +5,11 @@
 IVERILOG = iverilog
 VVP = vvp
 VIVADO = vivado
+ifeq ($(OS),Windows_NT)
+PYTHON = python
+else
 PYTHON = python3
+endif
 
 # Directory Configuration
 HARDWARE_DIR = ../Hardware
@@ -14,8 +18,12 @@ DOCS_DIR = ../Docs
 # Design Configuration
 TOP_MODULE = performance_analyzer
 OPTIMIZE_LEVEL = 
-TARGET_FREQ = 40
+TARGET_FREQ = 100
 FPGA_PART = xc7z020clg400-1
+
+# Timing Analysis Configuration
+# Note: FMAX will be calculated from Vivado WNS using: FMAX = 1000/(Target_Period - WNS)
+# These targets are used for synthesis constraints, actual FMAX comes from timing reports
 
 # File Lists (relative to Hardware directory) - Only files that actually exist
 CORE_SOURCES = \
@@ -53,6 +61,7 @@ SYNTHESIS_REPORT = synthesis_report.rpt
 TIMING_REPORT = timing_report.rpt
 AREA_REPORT = area_report.rpt
 UNIFIED_ANALYSIS_REPORT = unified_analysis.txt
+COST_ANALYSIS_REPORT = cost_analysis_report.txt
 
 # Benchmark Configuration
 BENCHMARK ?= 3
@@ -62,6 +71,94 @@ WHETSTONE_ITERATIONS = 100
 # Default target
 .PHONY: all
 all: comprehensive_analysis
+
+# =================================================================
+# High-Performance Analysis Flow (100 MHz Target)
+# =================================================================
+
+.PHONY: analyze_cost_performance
+analyze_cost_performance: high_freq_synthesis cost_analysis
+	@echo "==================================================================="
+	@echo "MinCPU HIGH-PERFORMANCE COST ANALYSIS COMPLETE"
+	@echo "==================================================================="
+ifeq ($(OS),Windows_NT)
+	@type $(COST_ANALYSIS_REPORT) 2>nul || echo "Report file not found"
+else
+	@cat $(COST_ANALYSIS_REPORT)
+endif
+	@echo "==================================================================="
+
+.PHONY: cost_analysis
+cost_analysis: benchmark_all
+	@echo "Running comprehensive cost and Figure of Merit analysis..."
+	$(PYTHON) cost_analyzer.py $(AREA_REPORT) $(TIMING_REPORT)
+	@echo "Cost analysis complete. Report: $(COST_ANALYSIS_REPORT)"
+
+.PHONY: test_wns_analysis
+test_wns_analysis:
+	@echo "Testing WNS-based FMAX calculation with sample timing report..."
+	@echo "This demonstrates how actual Vivado timing reports are parsed:"
+	@echo ""
+	$(PYTHON) cost_analyzer.py area_report.rpt test_timing_report.rpt
+	@echo ""
+	@echo "Key Formula Used: FMAX (MHz) = 1000 / (Target_Period - WNS)"
+	@echo "From sample report:"
+	@echo "  Target Period: 10.0 ns (100 MHz constraint)"
+	@echo "  WNS: -1.76 ns (timing violation)"
+	@echo "  Actual Period: 10.0 - (-1.76) = 11.76 ns"
+	@echo "  Calculated FMAX: 1000 / 11.76 = 85.0 MHz"
+	@echo ""
+	@echo "This shows the design can actually run at 85 MHz, not the 100 MHz target."
+
+.PHONY: analyze_timing_targets
+analyze_timing_targets:
+	@echo "==================================================================="
+	@echo "TIMING TARGET ANALYSIS"
+	@echo "==================================================================="
+	@echo "Analyzing how different timing targets affect achievable frequency:"
+	@echo ""
+	@echo "Formula: FMAX (MHz) = 1000 / (Target_Period - WNS)"
+	@echo ""
+	@echo "Scenario 1: Conservative 50 MHz target (20 ns period)"
+	@echo "  If WNS = +2.0 ns: FMAX = 1000/(20-2) = 55.6 MHz [PASS]"
+	@echo ""
+	@echo "Scenario 2: Moderate 75 MHz target (13.33 ns period)"  
+	@echo "  If WNS = +1.0 ns: FMAX = 1000/(13.33-1) = 81.1 MHz [PASS]"
+	@echo ""
+	@echo "Scenario 3: Aggressive 100 MHz target (10 ns period)"
+	@echo "  If WNS = -1.76 ns: FMAX = 1000/(10-(-1.76)) = 85.0 MHz [FAIL]"
+	@echo ""
+	@echo "Scenario 4: Very aggressive 125 MHz target (8 ns period)"
+	@echo "  If WNS = -3.76 ns: FMAX = 1000/(8-(-3.76)) = 85.0 MHz [FAIL]"
+	@echo ""
+	@echo "Key Insights:"
+	@echo "- WNS negative = timing violation, design can't meet target"
+	@echo "- WNS positive = timing margin, design exceeds target"
+	@echo "- Actual FMAX is independent of target when timing fails"
+	@echo "- Use realistic targets based on design complexity"
+	@echo "==================================================================="
+
+.PHONY: high_freq_synthesis
+high_freq_synthesis: $(SYNTH_SCRIPT) $(CONSTRAINT_FILE)
+	@echo "Running high-frequency synthesis ($(TARGET_FREQ) MHz target)..."
+	@echo "Applying aggressive timing optimizations..."
+ifeq ($(OS),Windows_NT)
+	@where $(VIVADO) >nul 2>&1 && ( \
+		$(VIVADO) -mode batch -source $(SYNTH_SCRIPT) -log synthesis.log && \
+		echo "High-frequency synthesis complete. Check synthesis.log for details." \
+	) || ( \
+		echo "Vivado not found. Running simulation-based cost analysis..." && \
+		$(PYTHON) cost_analyzer.py \
+	)
+else
+	@if command -v $(VIVADO) >/dev/null 2>&1; then \
+		$(VIVADO) -mode batch -source $(SYNTH_SCRIPT) -log synthesis.log; \
+		echo "High-frequency synthesis complete. Check synthesis.log for details."; \
+	else \
+		echo "Vivado not found. Running simulation-based cost analysis..."; \
+		$(PYTHON) cost_analyzer.py; \
+	fi
+endif
 
 # =================================================================
 # Comprehensive Analysis Flow
@@ -286,35 +383,57 @@ else
 endif
 
 $(SYNTH_SCRIPT): 
-	@echo "Creating Vivado synthesis script..."
-	@echo "# Auto-generated synthesis script for MinCPU" > $@
-	@echo "puts \"Starting MinCPU synthesis...\"" >> $@
-	@echo "create_project mincpu_opt ./build -part $(FPGA_PART) -force" >> $@
+	@echo "Creating high-performance Vivado synthesis script..."
+	@echo "puts \"Auto-generated high-performance synthesis script for MinCPU\"" > $@
+	@echo "puts \"Starting MinCPU high-frequency synthesis ($(TARGET_FREQ) MHz target)...\"" >> $@
+	@echo "create_project mincpu_highfreq ./build -part $(FPGA_PART) -force" >> $@
 	@echo "puts \"Adding source files...\"" >> $@
 	@echo "add_files {$(CORE_SOURCES) $(MEMORY_SOURCES)}" >> $@
 	@echo "set_property top performance_analyzer [current_fileset]" >> $@
-	@echo "puts \"Adding constraints...\"" >> $@
+	@echo "puts \"Adding timing constraints...\"" >> $@
 	@echo "add_files -fileset constrs_1 $(CONSTRAINT_FILE)" >> $@
-	@echo "puts \"Running synthesis...\"" >> $@
-	@echo "synth_design -top performance_analyzer -part $(FPGA_PART) -directive AreaOptimized_high" >> $@
-	@echo "puts \"Running optimization...\"" >> $@
-	@echo "opt_design -directive ExploreArea" >> $@
-	@echo "puts \"Running placement...\"" >> $@
-	@echo "place_design -directive ExtraPostPlacementOpt" >> $@
-	@echo "puts \"Running routing...\"" >> $@
-	@echo "route_design -directive Explore" >> $@
-	@echo "puts \"Generating reports...\"" >> $@
-	@echo "report_utilization -file $(AREA_REPORT)" >> $@
-	@echo "report_timing_summary -file $(TIMING_REPORT)" >> $@
-	@echo "puts \"Synthesis complete!\"" >> $@
+	@echo "puts \"Configuring synthesis for high performance...\"" >> $@
+	@echo "set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs synth_1]" >> $@
+	@echo "set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]" >> $@
+	@echo "puts \"Running high-performance synthesis...\"" >> $@
+	@echo "synth_design -top performance_analyzer -part $(FPGA_PART) -directive PerformanceOptimized" >> $@
+	@echo "puts \"Running aggressive optimization...\"" >> $@
+	@echo "opt_design -directive ExploreSequentialArea" >> $@
+	@echo "puts \"Running high-performance placement...\"" >> $@
+	@echo "place_design -directive ExtraTimingOpt" >> $@
+	@echo "puts \"Running physical optimization...\"" >> $@
+	@echo "phys_opt_design -directive AggressiveExplore" >> $@
+	@echo "puts \"Running high-performance routing...\"" >> $@
+	@echo "route_design -directive AggressiveExplore" >> $@
+	@echo "puts \"Final physical optimization...\"" >> $@
+	@echo "phys_opt_design -directive AggressiveFanoutOpt" >> $@
+	@echo "puts \"Generating comprehensive reports...\"" >> $@
+	@echo "report_utilization -file $(AREA_REPORT) -hierarchical" >> $@
+	@echo "report_timing_summary -file $(TIMING_REPORT) -delay_type min_max -report_unconstrained -check_timing_verbose -max_paths 10 -input_pins -warn_on_violation" >> $@
+	@echo "report_timing -file timing_detailed.rpt -sort_by slack -max_paths 10 -nworst 1 -unique_pins -input_pins" >> $@
+	@echo "report_clock_networks -file clock_networks.rpt" >> $@
+	@echo "report_power -file power_report.rpt" >> $@
+	@echo "report_drc -file drc_report.rpt" >> $@
+	@echo "puts \"High-frequency synthesis complete! Target: $(TARGET_FREQ) MHz\"" >> $@
 	@echo "exit" >> $@
 
 $(CONSTRAINT_FILE):
-	@echo "Creating timing constraints..."
-	@echo "# MinCPU Timing Constraints" > $@
+	@echo "Creating high-performance timing constraints..."
+	@echo "# MinCPU High-Performance Timing Constraints ($(TARGET_FREQ) MHz)" > $@
+	@echo "# Primary clock constraint" >> $@
 	@echo "create_clock -period [expr 1000.0/$(TARGET_FREQ)] -name sys_clk [get_ports clk]" >> $@
-	@echo "set_input_delay -clock sys_clk 2.0 [all_inputs]" >> $@
-	@echo "set_output_delay -clock sys_clk 2.0 [all_outputs]" >> $@
+	@echo "# Aggressive I/O timing" >> $@
+	@echo "set_input_delay -clock sys_clk 1.0 [all_inputs]" >> $@
+	@echo "set_output_delay -clock sys_clk 1.0 [all_outputs]" >> $@
+	@echo "# Clock uncertainty and jitter" >> $@
+	@echo "set_clock_uncertainty 0.1 [get_clocks sys_clk]" >> $@
+	@echo "# Maximum delay constraints for critical paths" >> $@
+	@echo "set_max_delay [expr 1000.0/$(TARGET_FREQ) * 0.9] -from [all_inputs] -to [all_outputs]" >> $@
+	@echo "# Disable timing on reset" >> $@
+	@echo "set_false_path -from [get_ports rst_n]" >> $@
+	@echo "# Optimize for speed" >> $@
+	@echo "set_property CFGBVS VCCO [current_design]" >> $@
+	@echo "set_property CONFIG_VOLTAGE 3.3 [current_design]" >> $@
 
 # =================================================================
 # Performance Analysis (Fixed)
@@ -567,6 +686,11 @@ help:
 	@echo ""
 	@echo "Main Targets:"
 	@echo "  all                       - Run comprehensive analysis"
+	@echo "  analyze_cost_performance  - HIGH-FREQ COST ANALYSIS (100 MHz + FoM)"
+	@echo "  cost_analysis             - Calculate cost and Figure of Merit"
+	@echo "  high_freq_synthesis       - Run 100 MHz synthesis (requires Vivado)"
+	@echo "  test_wns_analysis         - Test WNS-based FMAX calculation"
+	@echo "  analyze_timing_targets    - Analyze different timing target scenarios"
 	@echo "  comprehensive_analysis    - Full optimization and analysis flow"
 	@echo "  optimize_synthesis        - Run optimized synthesis (requires Vivado)"
 	@echo "  performance_analysis      - Run performance benchmarks"
